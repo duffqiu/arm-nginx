@@ -1,7 +1,11 @@
 FROM registry.openanolis.cn/openanolis/nginx:1.14.1-8.6
 
-# 安装 fcgiwrap 和其他依赖
-RUN yum install -y epel-release && yum install -y fcgiwrap && yum clean all
+RUN groupadd -r www-data && useradd -r -g www-data www-data
+
+# 安装 fcgiwrap spawn-fcgi 和其他依赖
+RUN yum install -y epel-release && yum install -y fcgiwrap spawn-fcgi && yum clean all
+
+RUN touch /var/run/fcgiwrap.socket && chown www-data:www-data /var/run/fcgiwrap.socket && chmod 660 /var/run/fcgiwrap.socket
 
 # 创建 cgi-bin 目录
 RUN mkdir -p /usr/lib/cgi-bin
@@ -18,6 +22,15 @@ COPY cpu_architecture.conf /etc/nginx/default.d/cpu_architecture.conf
 # 暴露端口
 EXPOSE 80
 
+# 创建一个启动脚本来同时启动 fcgiwrap 和 Nginx
+RUN echo '#!/bin/bash' > /start.sh \
+    && echo 'spawn-fcgi -s /var/run/fcgiwrap.socket -u www-data -g www-data -- /usr/sbin/fcgiwrap &' >> /start.sh \
+    && echo 'nginx -g "daemon off;"' >> /start.sh \
+    && chmod +x /start.sh
+
+# 设置卷，以便可以从主机挂载 CGI 脚本
+VOLUME /usr/lib/cgi-bin
+
 # 启动 Nginx (基于基础镜像的启动命令)
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/start.sh"]
 
