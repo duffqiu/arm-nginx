@@ -2,5 +2,5 @@
 echo "Content-type: text/plain"
 echo ""
 echo "CPU Architecture: $(uname -m)"
-echo "Server IP: $(hostname -I | cut -d' ' -f1)"
+echo "Server IP in Container: $(hostname -I | cut -d' ' -f1)"
 
