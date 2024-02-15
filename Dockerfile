@@ -1,11 +1,10 @@
 FROM registry.openanolis.cn/openanolis/nginx:1.14.1-8.6
 
-RUN groupadd -r www-data && useradd -r -g www-data www-data
 
 # 安装 fcgiwrap spawn-fcgi 和其他依赖
 RUN yum install -y epel-release && yum install -y fcgiwrap spawn-fcgi && yum clean all
 
-RUN touch /var/run/fcgiwrap.socket && chown www-data:www-data /var/run/fcgiwrap.socket && chmod 660 /var/run/fcgiwrap.socket
+RUN touch /var/run/fcgiwrap.socket && chown nginx:nginx /var/run/fcgiwrap.socket && chmod 660 /var/run/fcgiwrap.socket
 
 # 创建 cgi-bin 目录
 RUN mkdir -p /usr/lib/cgi-bin
@@ -24,7 +23,7 @@ EXPOSE 80
 
 # 创建一个启动脚本来同时启动 fcgiwrap 和 Nginx
 RUN echo '#!/bin/bash' > /start.sh \
-    && echo 'spawn-fcgi -s /var/run/fcgiwrap.socket -u www-data -g www-data -- /usr/sbin/fcgiwrap &' >> /start.sh \
+    && echo 'spawn-fcgi -s /var/run/fcgiwrap.socket -u nginx -g nginx -- /usr/sbin/fcgiwrap &' >> /start.sh \
     && echo 'nginx -g "daemon off;"' >> /start.sh \
     && chmod +x /start.sh
 
