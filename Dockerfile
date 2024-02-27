@@ -11,12 +11,15 @@ RUN mkdir -p /usr/lib/cgi-bin
 
 # 添加脚本文件
 COPY cpu_architecture.sh /usr/lib/cgi-bin/cpu_architecture.sh
+COPY fetch_content.sh /usr/lib/cgi-bin/fetch_content.sh
 
 # 确保脚本是可执行的
 RUN chmod +x /usr/lib/cgi-bin/cpu_architecture.sh
+RUN chmod +x /usr/lib/cgi-bin/fetch_content.sh
 
 # 添加 Nginx 配置
 COPY cpu_architecture.conf /etc/nginx/default.d/cpu_architecture.conf
+COPY fetch_content.conf /etc/nginx/default.d/fetch_content.conf
 
 # 暴露端口
 EXPOSE 80
